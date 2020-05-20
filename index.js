@@ -1,34 +1,28 @@
-//引入npm包
-const xlsx = require('node-xlsx');
-const fs = require('fs');
+// 选择范围写入
+const fs = require("fs");
+let buf = Buffer.from("你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗" +
+    "你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗" +
+    "你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗" +
+    "你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗你还好吗");
 
-//读取文件内容
-const obj = xlsx.parse('./test.xlsx');
-console.log(obj);
-const excelObj=obj[0].data;
+// 打开文件
+fs.open("6.txt", "r+", (err, fd) => {
+    // 读取 buf 向文件写入数据
+    fs.write(fd, buf, null, null, null, (err, bytesWritten, buffer) => {
+        console.log(fd)
+        // 同步磁盘缓存
+        fs.fsync(fd, err => {
+            // 关闭文件
+            fs.close(fd, err => {
+                console.log("关闭文件");
+            });
+        });
+    });
+});
 
-//处理数据
-const data = [];
-for(let i in excelObj){
-    let row = excelObj[i];
-    if (typeof row[0] !== "number") {
-        data.push(row);
-    } else {
-        let hour = row[0];
-        let duration = row[1];
-        let sum = hour * duration;
-        let pay = 15;
-        let income = sum * pay;
-        data.push([hour, duration, sum, pay, income]);
-    }
-}
-console.log(data);
+// 这里为了看是否写入成功简单粗暴的使用 readFile 方法
+let fd = fs.readFile("6.txt", "utf8", (err, data) => {
+    console.log(data);
+});
 
-//将经过处理的数据写入新的xlsx文件中
-const buffer = xlsx.build([
-    {
-        name:'sheet1',
-        data:data
-    }
-]);
-fs.writeFileSync('test1.xlsx',buffer,{'flag':'w'});
+console.log(fd,22)
